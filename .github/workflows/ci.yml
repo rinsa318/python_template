@@ -1,0 +1,97 @@
+name: CI
+
+on:
+  pull_request:
+
+env:
+  ENVIRONMENT_DIRECTORY: environments/dev
+
+jobs:
+  head-commit-message:
+    name: Get head commit message
+    runs-on: ubuntu-latest
+    outputs:
+      head-commit-message: ${{ steps.commit_message.outputs.head_commit_message }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # HEAD^のメッセージも取得できるように2コミット分取得する
+          # https://github.com/actions/checkout?tab=readme-ov-file#checkout-head
+          fetch-depth: 2
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Get commit message
+        id: commit_message
+        # 複数行のメッセージにも対応
+        # https://docs.github.com/ja/actions/writing-workflows/choosing-what-your-workflow-does/workflow-commands-for-github-actions#example-of-a-multiline-string
+        run: |
+          {
+            echo 'head_commit_message<<EOF';   
+            echo "'$(git show -s --format=%B)'";   
+            echo EOF; 
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Print head commit message
+        run: echo ${{ steps.commit_message.outputs.head_commit_message }}
+
+  build:
+    name: Build test
+    runs-on: ubuntu-latest
+    needs: [head-commit-message]
+    # head-commit-messageで取得したメッセージ中に[skip ci]が含まれるときは実行しない
+    if: ${{ !contains(needs.head-commit-message.outputs.head-commit-message, '[skip ci]') }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build Image
+        run: |
+          docker compose build --parallel
+        working-directory: ${{ env.ENVIRONMENT_DIRECTORY }}
+
+  lint:
+    name: Run static checker
+    runs-on: ubuntu-latest
+    needs: [build]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Start Container
+        run: |
+          mv ../../.env.example ../../.env
+          docker compose up -d
+        working-directory: ${{ env.ENVIRONMENT_DIRECTORY }}
+
+      - name: Run linter
+        run: docker compose exec core poe lint
+        working-directory: ${{ env.ENVIRONMENT_DIRECTORY }}
+
+      - name: Check types
+        run: docker compose exec core poe type-check
+        working-directory: ${{ env.ENVIRONMENT_DIRECTORY }}
+
+  test:
+    name: Run test
+    runs-on: ubuntu-latest
+    needs: [lint]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Start Container
+        run: |
+          mv ../../.env.example ../../.env
+          docker compose up -d
+        working-directory: ${{ env.ENVIRONMENT_DIRECTORY }}
+
+      - name: Run tests
+        run: docker compose exec core poe test-coverage --cov-report=term-missing
+        working-directory: ${{ env.ENVIRONMENT_DIRECTORY }}
+
+      - name: Report coverage
+        run: |
+          docker compose exec core echo "# Coverage" >> $GITHUB_STEP_SUMMARY
+          docker compose exec core coverage report --format=markdown >> $GITHUB_STEP_SUMMARY
+        working-directory: ${{ env.ENVIRONMENT_DIRECTORY }}
