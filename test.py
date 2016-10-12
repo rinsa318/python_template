@@ -13,11 +13,13 @@ X, Y = np.meshgrid(x, y)
 sigma = 2
 #Z = np.exp(-(X**2 + Y**2)/(2*sigma**2)) / (2*np.pi*sigma**2)
 #Z = (-(X**2 + Y**2))
-Z = -(X + Y)**2
+ZZ = X + Y
+Z = np.exp(-(X))
 
-ax.plot_surface(X, Y, Z, rstride=1, cstride=1, cmap=cm.coolwarm)
-# ax.plot_wireframe(X, Y, Z, rstride=2, cstride=2)
-# ax.scatter(X, Y, Z, s=1)
+#ax.plot_surface(X, Y, Z, rstride=1, cstride=1, cmap=cm.coolwarm)
+ax.plot_surface(X, Y, ZZ, rstride=1, cstride=1, cmap=cm.coolwarm)
+ax.plot_wireframe(X, Y, Z, rstride=2, cstride=2)
+ax.scatter(X, Y, Z, s=1)
 
 plt.show()
 
