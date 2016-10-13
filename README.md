@@ -2,6 +2,7 @@ Name
 ====
 
 Overview
+![画像の説明](wiki/plot_result.eps)
 
 ## Description
 
