@@ -1,0 +1,36 @@
+{
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.organizeImports": "explicit"
+  },
+  "python.languageServer": "Pylance",
+  "python.testing.unittestEnabled": false,
+  "python.testing.pytestEnabled": true,
+  "python.testing.pytestArgs": ["tests"],
+  "python.terminal.activateEnvInCurrentTerminal": true,
+  "terminal.integrated.env.osx": { "PYTHONPATH": "${workspaceFolder}" },
+  "terminal.integrated.env.windows": { "PYTHONPATH": "${workspaceFolder}" },
+  "terminal.integrated.env.linux": { "PYTHONPATH": "${workspaceFolder}" },
+  "mypy-type-checker.importStrategy": "fromEnvironment",
+  "mypy-type-checker.preferDaemon": false,
+  "ruff.importStrategy": "fromEnvironment",
+  "notebook.formatOnSave.enabled": true,
+  "notebook.codeActionsOnSave": {
+    "notebook.source.fixAll.ruff": "explicit",
+    "notebook.source.organizeImports.ruff": "explicit",
+    "notebook.source.fixAll": "never",
+    "notebook.source.organizeImports": "never"
+  },
+  "[python]": {
+    "editor.codeActionsOnSave": {
+      "source.fixAll.ruff": "explicit",
+      "source.organizeImports.ruff": "explicit",
+      "source.fixAll": "never",
+      "source.organizeImports": "never"
+    },
+    "editor.defaultFormatter": "charliermarsh.ruff"
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  }
+}

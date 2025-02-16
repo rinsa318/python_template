@@ -1,0 +1,53 @@
+[tools]
+poetry = "2.0.1"
+uv = "0.5.29"
+python = "3.12.9"
+
+[env]
+mise.file = ".env"
+_.python.venv = ".venv"
+
+[tasks.build]
+description = "Build"
+run = "cd environments/local && docker compose build --parallel"
+
+[tasks.up]
+description = "Start Container"
+run = "cd environments/local && docker compose up -d"
+
+[tasks.down]
+description = "Stop Container"
+run = "cd environments/local && docker compose down --volumes --remove-orphans"
+
+[tasks.ci]
+description = "Run CI job"
+depends = ["lint", "type-check", "test-coverage"]
+
+[tasks.lint]
+description = "Lint"
+run = "poe lint"
+
+[tasks.lint-fix]
+description = "Lint fix"
+run = "poe lint-fix"
+
+[tasks.format]
+description = "Format"
+run = "poe format"
+
+[tasks.test]
+description = "Test"
+run = "poe test"
+
+[tasks.test-coverage]
+description = "Test Coverage"
+run = "poe test-coverage --cov-report=term-missing && coverage report --format=markdown"
+
+[tasks.test-module]
+description = "Test Module"
+run = "poe test-module"
+
+[tasks.type-check]
+description = "Type Check"
+run = "poe type-check"
+
