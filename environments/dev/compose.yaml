@@ -3,9 +3,25 @@ services:
   core:
     build:
       args:
-        - DEPLOY_TARGET=/app/
-        - PYTHON_VERSION=3.12.9
-        - UV_PROJECT_ENVIRONMENT_PATH=/usr/local
+        # - 現在のテンプレートではmiseを使用し.envをシェル環境変数として設定しているため、
+        #   シェル環境変数に記載の値をargsで使用する。つまり.envの管理のみで完結する。
+        # - そのためcompose.yamlは引数名のみ定義し値は省略する。
+        # --> シェル環境変数にも環境変数ファイルにも存在しないものは直接ここで記入が必要
+        # [Note]
+        # 複数のファイルで同じ環境変数がある場合、docker composeは以下優先度で使用する。
+        # そのためcompose.yamlを直接書き換えたり、miseで.envの読み込みをやめ、
+        # 別途シェル環境変数を設定したりする場合はその値が優先される。
+        # [優先度]
+        # 1. Composeファイル　　<-- 引数名のみ定義、値は省略
+        # 2. シェル環境変数      <-- 今回のテンプレでビルド時に使用されている値
+        # 3. 環境変数ファイル   (<-- 実質ここで設定した値が２で使用されている）　
+        # 4. Dockerfile
+        # 5. 変数が定義されていない
+        DEPLOY_TARGET:
+        PYTHON_VERSION:
+        UV_VERSION:
+        UV_PROJECT_ENVIRONMENT_PATH:
+        # VAR_NOT_PRESENT_IN_2_OR_3_OR_4: "xxxxx"
       context: ../../
       dockerfile: environments/dev/Dockerfile
     env_file:

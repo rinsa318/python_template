@@ -21,6 +21,7 @@ dev = [
 
 [tool.uv]
 package = false
+compile-bytecode = true
 link-mode = "copy"
 
 [build-system]
