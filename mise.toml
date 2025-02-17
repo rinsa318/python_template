@@ -8,16 +8,24 @@ mise.file = ".env"
 _.python.venv = ".venv"
 
 [tasks.build]
-description = "Build"
-run = "cd environments/local && docker compose build --parallel"
+description = "Build Image"
+run = "cd environments/dev && docker compose build --parallel --no-cache"
 
 [tasks.up]
 description = "Start Container"
-run = "cd environments/local && docker compose up -d"
+run = "cd environments/dev && docker compose up -d"
 
 [tasks.down]
 description = "Stop Container"
-run = "cd environments/local && docker compose down --volumes --remove-orphans"
+run = "cd environments/dev && docker compose down --volumes --remove-orphans"
+
+[tasks.exec]
+description = "Enter Container"
+run = "cd environments/dev && docker compose exec {{option(name='service', default='core')}} bash"
+# execute: mise run exec --service <name>
+# runs: cd environments/dev && docker compose exec <name> bash
+# execute: mise run exec
+# runs: cd environments/dev && docker compose exec core bash
 
 [tasks.ci]
 description = "Run CI job"
@@ -42,6 +50,7 @@ run = "poe test"
 [tasks.test-coverage]
 description = "Test Coverage"
 run = "poe test-coverage --cov-report=term-missing && coverage report --format=markdown"
+wait_for = ["lint", "type-check"]
 
 [tasks.test-module]
 description = "Test Module"
@@ -50,4 +59,5 @@ run = "poe test-module"
 [tasks.type-check]
 description = "Type Check"
 run = "poe type-check"
+wait_for = ["lint"]
 

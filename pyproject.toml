@@ -21,6 +21,7 @@ dev = [
 
 [tool.uv]
 package = false
+link-mode = "copy"
 
 [build-system]
 requires = ["hatchling"]
@@ -49,6 +50,8 @@ fixable = ["E", "F", "I"]
 # E501: Line too long. (Leave it to auto-formatter)
 # E741: Do not use variables named 'I', 'O', or 'l'.
 ignore = ["E203", "E501", "E741"]
+# Disable fix for unused imports (`F401`).
+# unfixable = ["F401"]
 
 [tool.ruff.format]
 # The format settings follow black.
