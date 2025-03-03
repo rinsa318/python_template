@@ -1,88 +1,161 @@
+# Python Template
+
+Japanese followed by English
+
+## What's this?
+
+python で開発するためのテンプレートレポジトリ
+
+↓ 以下、project 用 readme テンプレート ↓
+
+# プロジェクトのタイトル
+
+## プロジェクト概要
+
+{プロジェクトの概要を記載}
+
+## 環境
+
+[mise](https://mise.jdx.dev/getting-started.html) を用いてローカル環境の主要ツール（初期状態は python と [uv](https://docs.astral.sh/uv/getting-started/features/#projects)）を管理し、[uv](https://docs.astral.sh/uv/getting-started/features/#projects) を用いて python のライブラリを管理する構成をとっています。docker コンテナ上での環境構築を前提として作成していますが、ローカル環境で直接開発する方針でも使用可能です。
+
+<!-- 言語、フレームワーク、ミドルウェア、インフラの一覧とバージョンを記載 -->
+
+| 言語・フレームワーク               | バージョン |
+| ---------------------------------- | ---------- |
+| Python                             | 3.12.9     |
+| uv                                 | 0.5.29     |
+| poethepoet                         | ^0.32.2    |
+| mypy                               | ^1.15.0    |
+| ruff                               | ^0.9.5     |
+| pytest                             | ^8.3.4     |
+| coverage                           | ^7.6.10    |
+| {language \| framework \| package} | {version}  |
+
+細かい設定は[mise.toml](./mise.toml)と[pyproject.toml](pyproject.toml)を参照してください。
+
+その他必要なツールやライブラリがある場合は、適宜 mise コマンドか uv コマンドを使用し追加してください。
+
+## 開発方法
+
+{開発方法の概要}
+
+### 環境構築
+
+```bash
+# 1. mise.tomlに記載のツールをローカル環境にインストール
+#（後述の.envの作成パートで必要）
+mise install
+
+# 2. 環境変数ファイル（.env）の生成
+# TODO: .env.exampleを適宜編集する
+eval "echo \"$(cat .env.example)\"" > .env
+# or
+mise run make-env
+
+# Optional. ローカル環境での開発用にライブラリをインストール
+uv sync --frozen
+```
+
+### 実行方法
+
+[Dockerfile](./environments/dev/Dockerfile)と[compose.yaml](./environments/dev/compose.yaml)を編集し、以下を実行する。
+
+**NOTE: 以下コマンドはすべて mise.toml 中でタスクとして定義しているので、`mise run <タスク名>` or `mise run # --> タスクを選択` でも実行可能。**
+
+```bash
+# イメージをビルド(キャッシュを使用しない)
+cd environments/dev && docker compose build --parallel --no-cache
+
+# イメージをビルド（キャッシュは使用される）し、コンテナをデーモンとして実行
+cd environments/dev && docker compose up -d
+
+# コンテナを停止。ボリュームとネットワークも削除
+cd environments/dev && docker compose down --volumes --remove-orphans
+
+# コンテナ内に入る
+cd environments/dev && docker compose exec <compose.yamlで定義するservice名> bash
+# or
+mise run exec --service <compose.yamlで定義するservice名>
+
+# CIジョブを実行
+poe lint && poe type-check && poe test-coverage --cov-report=term-missing && coverage report --format=markdown
+# or
+mise run ci
+```
+
+---
+
 # Project Title
 
-One Paragraph of project description goes here
+## Overview
 
-## Getting Started
+{Project Summary}
 
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
+## Environment
 
-### Prerequisites
+We use [mise](https://mise.jdx.dev/getting-started.html) to manage the main tools in the local environment (initially python and [uv](https://docs.astral.sh/uv/getting-started/features/#projects)) and [uv](https://docs.astral.sh/uv/getting-started/features/#projects) is configured to manage python libraries. Although it was created with the assumption that the environment is built on a docker container, it can also be used with a policy of developing directly in a local environment.
 
-What things you need to install the software and how to install them
+<!-- 言語、フレームワーク、ミドルウェア、インフラの一覧とバージョンを記載 -->
 
-```
-Give examples
-```
+| item                               | version   |
+| ---------------------------------- | --------- |
+| Python                             | 3.12.9    |
+| uv                                 | 0.5.29    |
+| poethepoet                         | ^0.32.2   |
+| mypy                               | ^1.15.0   |
+| ruff                               | ^0.9.5    |
+| pytest                             | ^8.3.4    |
+| coverage                           | ^7.6.10   |
+| {language \| framework \| package} | {version} |
 
-### Installing
+See [mise.toml](./mise.toml) and [pyproject.toml](pyproject.toml) for detailed configuration.
 
-A step by step series of examples that tell you have to get a development env running
+If other tools or libraries are needed, please add them by using the mise or uv command as appropriate.
 
-Say what the step will be
+## Development
 
-```
-Give the example
-```
+{Overview of Development}
 
-And repeat
+### Environment Building
 
-```
-until finished
-```
+```bash
+# 1. Install the tools listed in mise.toml in your local environment
+#（Necessary in the .env creation part below）
+mise install
 
-End with an example of getting some data out of the system or using it for a little demo
+# 2. Generating environment variable files (.env)
+# TODO: Edit .env.example as appropriate
+eval "echo \"$(cat .env.example)\"" > .env
+# or
+mise run make-env
 
-## Running the tests
-
-Explain how to run the automated tests for this system
-
-### Break down into end to end tests
-
-Explain what these tests test and why
-
-```
-Give an example
-```
-
-### And coding style tests
-
-Explain what these tests test and why
-
-```
-Give an example
+# Optional. Install libraries for development in local environment
+uv sync --frozen
 ```
 
-## Deployment
+### 実行方法
 
-Add additional notes about how to deploy this on a live system
+Edit the [Dockerfile](./environments/dev/Dockerfile) and [compose.yaml](./environments/dev/compose.yaml) and execute the following.
 
-## Built With
+**NOTE: The following commands are all defined as tasks in mise.toml, so they can be executed by `mise run <task name>` or `mise run # --> select task`.**
 
-* [Dropwizard](http://www.dropwizard.io/1.0.2/docs/) - The web framework used
-* [Maven](https://maven.apache.org/) - Dependency Management
-* [ROME](https://rometools.github.io/rome/) - Used to generate RSS Feeds
+```bash
+# Build image (without cache)
+cd environments/dev && docker compose build --parallel --no-cache
 
-## Contributing
+# Build image (cache is used) and run container as daemon
+cd environments/dev && docker compose up -d
 
-Please read [CONTRIBUTING.md](https://gist.github.com/PurpleBooth/b24679402957c63ec426) for details on our code of conduct, and the process for submitting pull requests to us.
+# Stop the container. Volume and network also deleted.
+cd environments/dev && docker compose down --volumes --remove-orphans
 
-## Versioning
+# Entering the Container
+cd environments/dev && docker compose exec <compose.yamlで定義するservice名> bash
+# or
+mise run exec --service <compose.yamlで定義するservice名>
 
-We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/your/project/tags). 
-
-## Authors
-
-* **Billie Thompson** - *Initial work* - [PurpleBooth](https://github.com/PurpleBooth)
-
-See also the list of [contributors](https://github.com/your/project/contributors) who participated in this project.
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
-
-## Acknowledgments
-
-* Hat tip to anyone who's code was used
-* Inspiration
-* etc
-
+# Run CI job
+poe lint && poe type-check && poe test-coverage --cov-report=term-missing && coverage report --format=markdown
+# or
+mise run ci
+```

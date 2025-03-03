@@ -1,11 +1,15 @@
 [tools]
-poetry = "2.0.1"
 uv = "0.5.29"
 python = "3.12.9"
 
 [env]
 mise.file = ".env"
 _.python.venv = ".venv"
+
+[tasks.make-env]
+description = "Make .env"
+run = 'eval "echo \"$(cat .env.example)\"" > .env'
+# https://github.com/docker/compose/issues/4081#issuecomment-660609867
 
 [tasks.build]
 description = "Build Image"
