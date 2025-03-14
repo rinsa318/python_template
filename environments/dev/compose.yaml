@@ -20,8 +20,7 @@ services:
         DEPLOY_TARGET:
         PYTHON_VERSION:
         UV_VERSION:
-        UV_PROJECT_ENVIRONMENT_PATH:
-        # VAR_NOT_PRESENT_IN_2_OR_3_OR_4: "xxxxx"
+        UV_PROJECT_ENVIRONMENT_PATH: # VAR_NOT_PRESENT_IN_2_OR_3_OR_4: "xxxxx"
       context: ../../
       dockerfile: environments/dev/Dockerfile
     env_file:
@@ -31,10 +30,19 @@ services:
       - type: bind
         source: ../../
         target: /app
-# ホスト側のフォルダを一部除外したい場合は、以下のように設定の追記が必要
-# 例）.venvを除外したいとき
-#       - type: volume
-#         source: exclude
-#         target: /app/.venv
-# volumes:
-#     exclude:
+    # # GPU使用時
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: all
+    #           # device_ids: ["0", "3"]
+    #           capabilities: [ gpu ]
+    # # ホスト側のフォルダを一部除外したい場合は、以下のように設定の追記が必要
+    # # 例）.venvを除外したいとき
+    # #       - type: volume
+    # #         source: exclude
+    # #         target: /app/.venv
+    # volumes:
+    #     exclude:
