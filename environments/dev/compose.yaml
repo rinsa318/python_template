@@ -30,6 +30,15 @@ services:
       - type: bind
         source: ../../
         target: /app
+    # コマンド設定時
+    command:
+      - /bin/bash
+      - -c
+      - |
+        echo 'Command 1'
+        i=0; while [ $((i)) -ne 5 ]; do echo 'Command 2'; i=$((i+1)); done
+        echo 'Command 3'
+        while true; do echo 'Command 4'; done
     # # GPU使用時
     # deploy:
     #   resources:
