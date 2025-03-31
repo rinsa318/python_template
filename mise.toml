@@ -11,9 +11,13 @@ description = "Make .env"
 run = 'eval "echo \"$(cat .env.example)\"" > .env'
 # https://github.com/docker/compose/issues/4081#issuecomment-660609867
 
+[tasks.build-no-chache]
+description = "Build Image without cache"
+run = "cd environments/dev && docker compose build --parallel --no-cache"
+
 [tasks.build]
 description = "Build Image"
-run = "cd environments/dev && docker compose build --parallel --no-cache"
+run = "cd environments/dev && docker compose build --parallel"
 
 [tasks.up]
 description = "Start Container"
