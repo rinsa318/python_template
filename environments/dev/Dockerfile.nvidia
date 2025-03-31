@@ -5,12 +5,11 @@
 # build時はcompose.yamlの値が優先されるため、
 # compose.yamlに設定が存在する場合はdockerfile中でARGの値を変更しても反映されない。
 # 設定がなかったとき用にデフォルト値を設定
-ARG PYTHON_VERSION=${PYTHON_VERSION:-3.12.9}
 ARG UV_VERSION=${UV_VERSION:-0.5.29}
 # "COPY --from"の中ではARGは使用できないため、余分なFROMを定義
 # 参考：https://github.com/docker/buildx/issues/1050#issuecomment-1090026399
 FROM ghcr.io/astral-sh/uv:${UV_VERSION} AS astral_uv
-FROM python:${PYTHON_VERSION}-slim-bookworm
+FROM nvidia/cuda:12.4.1-cudnn-devel-ubuntu22.04
 
 # -------------------------------------------
 # ディレクトリの設定
@@ -23,6 +22,24 @@ WORKDIR ${DEPLOY_TARGET}
 # -------------------------------------------
 # 依存関係のインストール
 # -------------------------------------------
+# 指定するバージョンのpythonをビルドしインストール
+# --> nvidia/cuda:12.4.1-cudnn-devel-ubuntu22.04 にpythonはない
+# 　　 pythonのバージョンまで固めなくていい場合は`apt install python3-dev`のみに置き換えてもOK
+ARG PYTHON_VERSION=${PYTHON_VERSION:-3.12.9}
+ARG UV_PROJECT_ENVIRONMENT_PATH=${UV_PROJECT_ENVIRONMENT_PATH:-/usr/local}
+ENV TZ=Asia/Tokyo \
+    DEBIAN_FRONTEND=noninteractive
+COPY environments/dev/python-requirements.txt .
+RUN apt update && \
+    sed 's/#.*//' python-requirements.txt | xargs apt-get install -y --no-install-recommends && \
+    wget https://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tar.xz && \
+    tar xJf Python-${PYTHON_VERSION}.tar.xz && \
+    cd Python-${PYTHON_VERSION} && \
+    ./configure --prefix=${UV_PROJECT_ENVIRONMENT_PATH} --enable-optimizations && \
+    make -j8 && \
+    make install && \
+    ln -s ${UV_PROJECT_ENVIRONMENT_PATH}/bin/python3 ${UV_PROJECT_ENVIRONMENT_PATH}/bin/python
+
 # apt
 COPY environments/dev/package.txt .
 RUN apt update && \
@@ -32,8 +49,7 @@ RUN apt update && \
 # uvのインストール
 COPY --from=astral_uv /uv /uvx /bin/
 # uvを用いてpythonのライブラリをインストール
-ARG UV_PROJECT_ENVIRONMENT_PATH=${UV_PROJECT_ENVIRONMENT_PATH:-/usr/local}
-ENV UV_PROJECT_ENVIRONMENT=${UV_PROJECT_ENVIRONMENT_PATH}
+ENV UV_PROJECT_ENVIRONMENT=${UV_PROJECT_ENVIRONMENT_PATH:-/usr/local}
 RUN --mount=type=cache,target=/root/.cache/uv \
     --mount=type=bind,source=uv.lock,target=uv.lock \
     --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
