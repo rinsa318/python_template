@@ -45,9 +45,19 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Show compose.yaml
+        # 【解決法があるはず】
+        #   github action上だとプロジェクトrootにある.envを自動で読み取ってくれず、
+        #   compose.yaml内のargが未定義になってしまう。
+        #   --> --env-file オプションで.envを指定
+        run: |
+          mv ../../.env.ci ../../.env
+          docker compose --env-file ../../.env config
+        working-directory: ${{ env.ENVIRONMENT_DIRECTORY }}
+
       - name: Build Image
         run: |
-          docker compose build --parallel
+          docker compose --env-file ../../.env build --parallel
         working-directory: ${{ env.ENVIRONMENT_DIRECTORY }}
 
   lint:
@@ -58,18 +68,27 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Show compose.yaml
+        # 【解決法があるはず】
+        #   github action上だとプロジェクトrootにある.envを自動で読み取ってくれず、
+        #   compose.yaml内のargが未定義になってしまう。
+        #   --> --env-file オプションで.envを指定
+        run: |
+          mv ../../.env.ci ../../.env
+          docker compose --env-file ../../.env config
+        working-directory: ${{ env.ENVIRONMENT_DIRECTORY }}
+
       - name: Start Container
         run: |
-          mv ../../.env.example ../../.env
-          docker compose up -d
+          docker compose --env-file ../../.env up -d
         working-directory: ${{ env.ENVIRONMENT_DIRECTORY }}
 
       - name: Run linter
-        run: docker compose exec core poe lint
+        run: docker compose --env-file ../../.env exec core poe lint
         working-directory: ${{ env.ENVIRONMENT_DIRECTORY }}
 
       - name: Check types
-        run: docker compose exec core poe type-check
+        run: docker compose --env-file ../../.env exec core poe type-check
         working-directory: ${{ env.ENVIRONMENT_DIRECTORY }}
 
   test:
@@ -80,18 +99,28 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Show compose.yaml
+        # 【解決法があるはず】
+        #   github action上だとプロジェクトrootにある.envを自動で読み取ってくれず、
+        #   compose.yaml内のargが未定義になってしまう。
+        #   --> --env-file オプションで.envを指定
+        run: |
+          mv ../../.env.ci ../../.env
+          docker compose --env-file ../../.env config
+        working-directory: ${{ env.ENVIRONMENT_DIRECTORY }}
+
       - name: Start Container
         run: |
-          mv ../../.env.example ../../.env
-          docker compose up -d
+          docker compose --env-file ../../.env up -d
         working-directory: ${{ env.ENVIRONMENT_DIRECTORY }}
 
       - name: Run tests
-        run: docker compose exec core poe test-coverage --cov-report=term-missing
+        run: |
+          docker compose --env-file ../../.env exec core poe test-coverage --cov-report=term-missing
         working-directory: ${{ env.ENVIRONMENT_DIRECTORY }}
 
       - name: Report coverage
         run: |
-          docker compose exec core echo "# Coverage" >> $GITHUB_STEP_SUMMARY
-          docker compose exec core coverage report --format=markdown >> $GITHUB_STEP_SUMMARY
+          docker compose --env-file ../../.env exec core echo "# Coverage" >> $GITHUB_STEP_SUMMARY
+          docker compose --env-file ../../.env exec core coverage report --format=markdown >> $GITHUB_STEP_SUMMARY
         working-directory: ${{ env.ENVIRONMENT_DIRECTORY }}

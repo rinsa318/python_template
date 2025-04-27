@@ -1,28 +1,34 @@
 name: python-template
 services:
   core:
-    build:
+    build: 
+      # --------------------------------------------------------------------
+      # --> シェル環境変数/環境変数ファイル/dockerfileいずれにも存在せず、
+      #     dockerfile中で必要な変数はここで追記が必要
+      # --------------------------------------------------------------------
       args:
-        # - 現在のテンプレートではmiseを使用し.envをシェル環境変数として設定しているため、
-        #   シェル環境変数に記載の値をargsで使用する。つまり.envの管理のみで完結する。
-        # - そのためcompose.yamlは引数名のみ定義し値は省略する。
-        # --> シェル環境変数にも環境変数ファイルにも存在しないものは直接ここで記入が必要
-        # [Note]
-        # 複数のファイルで同じ環境変数がある場合、docker composeは以下優先度で使用する。
-        # そのためcompose.yamlを直接書き換えたり、miseで.envの読み込みをやめ、
-        # 別途シェル環境変数を設定したりする場合はその値が優先される。
-        # [優先度]
-        # 1. Composeファイル　　<-- 引数名のみ定義、値は省略
-        # 2. シェル環境変数      <-- 今回のテンプレでビルド時に使用されている値
-        # 3. 環境変数ファイル   (<-- 実質ここで設定した値が２で使用されている）　
-        # 4. Dockerfile
-        # 5. 変数が定義されていない
-        DEPLOY_TARGET:
-        PYTHON_VERSION:
-        UV_VERSION:
-        UV_PROJECT_ENVIRONMENT_PATH: # VAR_NOT_PRESENT_IN_2_OR_3_OR_4: "xxxxx"
+        DEPLOY_TARGET: ${DEPLOY_TARGET}
+        PYTHON_VERSION: ${PYTHON_VERSION}
+        UV_VERSION: ${UV_VERSION}
+        UV_PROJECT_ENVIRONMENT_PATH: ${UV_PROJECT_ENVIRONMENT_PATH} 
+        # ARG_NOT_PRESENT_IN_ENVFILE_SHELL_DOCKERFILE: "xxxxx"
       context: ../../
       dockerfile: environments/dev/Dockerfile
+    # --------------------------------------------------------------------
+    # [Note]
+    # 複数のファイルで同じ環境変数がある場合、docker composeは以下優先度で使用する。
+    # そのためcompose.yamlを直接書き換えたり、miseで.envの読み込みをやめ、
+    # 別途シェル環境変数を設定したりする場合はその値が優先される。
+    # [優先度]
+    # 1. Composeファイル
+    # 2. シェル環境変数 --> 環境変数をコンテナ内に通す必要あり
+    # （https://docs.docker.jp/v20.10/compose/environment-variables.html#pass-environment-variables-to-containers）
+    # 3. 環境変数ファイル
+    # 4. Dockerfile
+    # 5. 変数が定義されていない
+    # --------------------------------------------------------------------
+    # environment:
+    #   - XXXX=xxxxx
     env_file:
       - ../../.env
     tty: true
@@ -30,6 +36,11 @@ services:
       - type: bind
         source: ../../
         target: /app
+    # ホスト側のフォルダを一部除外したい場合は、以下のように設定の追記が必要
+    # 例）.venvを除外したいとき
+      - type: volume
+        source: exclude
+        target: /app/.venv
     # コマンド設定時
     command:
       - /bin/bash
@@ -39,19 +50,5 @@ services:
         i=0; while [ $((i)) -ne 5 ]; do echo 'Command 2'; i=$((i+1)); done
         echo 'Command 3'
         while true; do echo 'Command 4'; done
-    # # GPU使用時
-    # deploy:
-    #   resources:
-    #     reservations:
-    #       devices:
-    #         - driver: nvidia
-    #           count: all
-    #           # device_ids: ["0", "3"]
-    #           capabilities: [ gpu ]
-    # # ホスト側のフォルダを一部除外したい場合は、以下のように設定の追記が必要
-    # # 例）.venvを除外したいとき
-    # #       - type: volume
-    # #         source: exclude
-    # #         target: /app/.venv
-    # volumes:
-    #     exclude:
+volumes:
+  exclude:

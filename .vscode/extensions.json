@@ -2,7 +2,9 @@
   "recommendations": [
     "charliermarsh.ruff",
     "ms-python.mypy-type-checker",
-    "GitHub.vscode-github-actions"
+    "GitHub.vscode-github-actions",
+    "esbenp.prettier-vscode",
+    "docker.docker"
   ],
   "unwantedRecommendations": [
     "ms-python.isort",
